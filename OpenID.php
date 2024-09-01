@@ -3,6 +3,7 @@
 class OpenID
 {
     private ?string $metadata_url;
+    private ?string $redirect_uri;
     private ?string $client_id;
     private ?string $client_secret;
     private ?string $default_role;
@@ -33,6 +34,7 @@ class OpenID
         // General Options
         $this->is_network = is_plugin_active_for_network('wp-openid');
         $this->metadata_url = defined('WP_OPENID_METADATA_URL') ? WP_OPENID_METADATA_URL : ($this->is_network ? get_site_option('openid_metadata_url') : get_option('openid_metadata_url'));
+        $this->redirect_uri = defined('WP_OPENID_REDIRECT_URI') ? WP_OPENID_REDIRECT_URI : ($this->is_network ? get_site_option('openid_redirect_uri') : get_option('openid_redirect_uri'));
         $this->client_id = defined('WP_OPENID_CLIENT_ID') ? WP_OPENID_CLIENT_ID : ($this->is_network ? get_site_option('openid_client_id') : get_option('openid_client_id'));
         $this->client_secret = defined('WP_OPENID_CLIENT_SECRET') ? WP_OPENID_CLIENT_SECRET : ($this->is_network ? get_site_option('openid_client_secret') : get_option('openid_client_secret'));
         $this->default_role = defined('WP_OPENID_DEFAULT_ROLE') ? WP_OPENID_DEFAULT_ROLE : ($this->is_network ? get_site_option('openid_default_role') : get_option('openid_default_role'));
@@ -200,7 +202,7 @@ class OpenID
             'response_type' => 'code',
             'client_id' => $this->client_id,
             'state' => $state['state'],
-            'redirect_uri' => esc_url(add_query_arg('openid', 'callback', site_url('/wp-login.php'))),
+            'redirect_uri' => esc_url(add_query_arg('openid', 'callback', $this->redirect_uri)),
             'code_challenge' => $code_challenge,
             'code_challenge_method' => 'S256',
             'scope' => 'openid profile email',
@@ -290,7 +292,7 @@ class OpenID
             'body' => [
                 'grant_type' => 'authorization_code',
                 'code' => $code,
-                'redirect_uri' => esc_url(add_query_arg('openid', 'callback', site_url('/wp-login.php'))),
+                'redirect_uri' => esc_url(add_query_arg('openid', 'callback', $this->redirect_uri)),
                 'client_id' => $this->client_id,
                 'client_secret' => $this->client_secret,
                 'code_verifier' => $state['verifier'],
@@ -416,6 +418,7 @@ class OpenID
     {
         // General options
         register_setting('openid', 'openid_metadata_url');
+        register_setting('openid', 'openid_redirect_uri');
         register_setting('openid', 'openid_client_id');
         register_setting('openid', 'openid_client_secret');
         register_setting('openid', 'openid_default_role');
@@ -624,15 +627,19 @@ class OpenID
                     <?php esc_html_e('Step 4', 'openid'); ?>
                 </h2>
                 <p>
-                    If your OpenID provider supports provider initiated login, you can use the following settings:
+                    Enter where you want to be redirected after login. By default, it should be <code><?php echo esc_url(add_query_arg('openid', 'login', site_url('/wp-login.php'))) ?></code>
                 </p>
                 <table class="form-table">
                     <tr>
                         <th scope="row">
-                            <?php esc_html_e('Initiate Login URI', 'openid'); ?>
+                            Redirect URI
                         </th>
                         <td>
-                            <code><?php echo esc_url(add_query_arg('openid', 'login', site_url('/wp-login.php'))) ?></code>
+                            <label>
+                                <input type="url" name="openid_redirect_uri"
+                                       value="<?php echo esc_url($this->redirect_uri); ?>"
+                                       size="40"<?php echo esc_attr(defined('WP_OPENID_REDIRECT_URI') ? ' disabled readonly' : ''); ?>>
+                            </label>
                         </td>
                     </tr>
                 </table>
@@ -847,6 +854,7 @@ class OpenID
 
         // Validate and save the settings
         update_site_option('openid_metadata_url', esc_url_raw(filter_var($_POST['openid_metadata_url'], FILTER_VALIDATE_URL) ?? '', ['https']));
+        update_site_option('openid_redirect_uri', esc_url_raw(filter_var($_POST['openid_redirect_uri'], FILTER_VALIDATE_URL) ?? '', ['https']));
         update_site_option('openid_client_id', sanitize_text_field($_POST['openid_client_id'] ?? ''));
         update_site_option('openid_client_secret', sanitize_text_field($_POST['openid_client_secret'] ?? ''));
         update_site_option('openid_default_role', sanitize_text_field($_POST['openid_default_role'] ?? ''));
@@ -860,12 +868,14 @@ class OpenID
     {
         if ($this->is_network) {
             delete_site_option('openid_metadata_url');
+            delete_site_option('openid_redirect_uri');
             delete_site_option('openid_client_id');
             delete_site_option('openid_client_secret');
             delete_site_option('default_role');
             delete_site_option('user_mapping');
         } else {
             delete_option('openid_metadata_url');
+            delete_option('openid_redirect_uri');
             delete_option('openid_client_id');
             delete_option('openid_client_secret');
             delete_option('openid_default_role');

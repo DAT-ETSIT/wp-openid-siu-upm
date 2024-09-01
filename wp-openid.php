@@ -1,15 +1,15 @@
 <?php
 
 /*
-Plugin Name: WP OpenID
-Plugin URI: https://github.com/nicko170/wp-openid
-Description: Simple OpenID authentication for WordPress.
+Plugin Name: WP OpenId - SIU UPM
+Plugin URI: https://github.com/DAT-ETSIT/wp-siu-upm
+Description: SIU UPM authentication for WordPress. Based on nicko170's wp-openid
 Version: VERSION
-Author: Nick Pratley
-Author URI: https://theitdept.au
+Author: Pablo Fernández López
+Author URI: https://github.com/Pablofl01
 Text Domain: openid
 Domain Path: /languages
-Documentation: https://github.com/nicko170/wp-openid
+Documentation: https://github.com/DAT-ETSIT/wp-siu-upm
 */
 
 
@@ -28,9 +28,9 @@ require_once __DIR__ . '/GithubUpdater.php';
 // We only want to run the updater if we are in the admin area.
 add_action('admin_init', function () {
     GithubUpdater::make()
-        ->repository('nicko170/wp-openid')
+        ->repository('DAT-ETSIT/wp-siu-upm')
         ->asset_name('wp-openid.zip')
-        ->readme_url('https://raw.githubusercontent.com/nicko170/wp-openid/main/README.md')
+        ->readme_url('https://raw.githubusercontent.com/DAT-ETSIT/wp-siu-upm/main/README.md')
         ->boot(__FILE__);
 });
 
