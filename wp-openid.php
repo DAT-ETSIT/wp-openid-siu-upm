@@ -29,7 +29,7 @@ require_once __DIR__ . '/GithubUpdater.php';
 add_action('admin_init', function () {
     GithubUpdater::make()
         ->repository('DAT-ETSIT/wp-siu-upm')
-        ->asset_name('wp-openid.zip')
+        ->asset_name('wp-openid-siu-upm.zip')
         ->readme_url('https://raw.githubusercontent.com/DAT-ETSIT/wp-siu-upm/main/README.md')
         ->boot(__FILE__);
 });

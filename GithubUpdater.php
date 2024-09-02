@@ -89,7 +89,7 @@ class GithubUpdater
                     'name' => $this->plugin['Name'],
                     'slug' => $this->basename,
                     'requires' => '5.0',
-                    'tested' => '6.1.1',
+                    'tested' => '6.6.1',
                     'version' => $gh['tag_name'],
                     'author' => $this->plugin['AuthorName'],
                     'author_profile' => $this->plugin['AuthorURI'],
