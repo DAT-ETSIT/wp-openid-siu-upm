@@ -188,15 +188,15 @@ class OpenID
      * @throws Exception
      */
     public function login_redirect(): bool
-    {
+	{
         // Redirect to OpenID , passing the state and nonce
         // Implementation taken from: https://developer.openid.com/docs/guides/sign-into-web-app-redirect/php/main/#redirect-to-the-sign-in-page
 
 		$state = $this->_create_oauth_state();
 
-        // Create the PKCE code verifier and code challenge
-        $hash = hash('sha256', $state['verifier'], true);
-        $code_challenge = rtrim(strtr(base64_encode($hash), '+/', '-_'), '=');
+		// Create the PKCE code verifier and code challenge
+		$hash = hash('sha256', $state['verifier'], true);
+		$code_challenge = rtrim(strtr(base64_encode($hash), '+/', '-_'), '=');
 
 		// Capture the redirect_to parameter
 		$redirect_to = isset($_REQUEST['redirect_to']) ? esc_url($_REQUEST['redirect_to']) : home_url();
@@ -204,59 +204,59 @@ class OpenID
 		// Store the redirect_to URL in a session or a transitory option
 		set_transient('openid_redirect_to', $redirect_to, 3600); // Store for 1 hour
 
-        return wp_redirect(add_query_arg([
-            'response_type' => 'code',
-            'client_id' => $this->client_id,
-            'state' => $state['state'],
-            'redirect_uri' => esc_url(add_query_arg('openid', 'callback', $this->redirect_uri)),
-            'code_challenge' => $code_challenge,
-            'code_challenge_method' => 'S256',
-            'scope' => 'openid profile email',
-        ], $this->metadata['authorization_endpoint']));
-    }
+		return wp_redirect(add_query_arg([
+			'response_type' => 'code',
+			'client_id' => $this->client_id,
+			'state' => $state['state'],
+			'redirect_uri' => esc_url(add_query_arg('openid', 'callback', $this->redirect_uri)),
+			'code_challenge' => $code_challenge,
+			'code_challenge_method' => 'S256',
+			'scope' => 'openid profile email',
+		], $this->metadata['authorization_endpoint']));
+	}
 
     public function login_callback(): bool
-    {
-        if (!$state = $this->_get_oauth_state()) {
-            die("state not found");
-        }
+	{
+		if (!$state = $this->_get_oauth_state()) {
+			die("state not found");
+		}
 
-        // Check the state
-        if (empty($_GET['state']) || $_GET['state'] != $state['state']) {
-            die("state does not match");
-        }
+		// Check the state
+		if (empty($_GET['state']) || $_GET['state'] != $state['state']) {
+			die("state does not match");
+		}
 
-        if (!empty($_GET['error'])) {
-            die("authorization server returned an error: " . $_GET['error']);
-        }
+		if (!empty($_GET['error'])) {
+			die("authorization server returned an error: " . $_GET['error']);
+		}
 
-        if (empty($_GET['code'])) {
+		if (empty($_GET['code'])) {
 			die("this is unexpected, the authorization server redirected without a code or an error");
-        }
+		}
 
-        // Exchange the authorization code for an access token by making a request to the token endpoint,
-        // using the authorization code. The authorization code is a one-time use code, and if the token endpoint
-        // returns us a set of tokens instead of an error, we can assume the user and token are valid.
-        $token = $this->_get_token($_GET['code']);
+		// Exchange the authorization code for an access token by making a request to the token endpoint,
+		// using the authorization code. The authorization code is a one-time use code, and if the token endpoint
+		// returns us a set of tokens instead of an error, we can assume the user and token are valid.
+		$token = $this->_get_token($_GET['code']);
 
-        // Because we've asked the OpenID server for the openid scope, the response will contain an id_token
-        // We do not need to validate the token, as it's been retrieved from the OpenID server - not the user.
-        // We can just decode it and use the claims.
-        if (empty($token['id_token'])) {
-            die("No id_token returned");
-        }
+		// Because we've asked the OpenID server for the openid scope, the response will contain an id_token
+		// We do not need to validate the token, as it's been retrieved from the OpenID server - not the user.
+		// We can just decode it and use the claims.
+		if (empty($token['id_token'])) {
+			die("No id_token returned");
+		}
 
-        // Decode the id_token
-        $claim = json_decode(base64_decode(explode('.', $token['id_token'])[1]), true);
+		// Decode the id_token
+		$claim = json_decode(base64_decode(explode('.', $token['id_token'])[1]), true);
 
-        // Find or create a WordPress user for the claim, based on the user field mapping
-        $user = $this->_user_from_claim($claim);
+		// Find or create a WordPress user for the claim, based on the user field mapping
+		$user = $this->_user_from_claim($claim);
 
-        // Log the user in
-        $this->_login_user($user);
+		// Log the user in
+		$this->_login_user($user);
 
-        // Delete the state
-        $this->_delete_oauth_state();
+		// Delete the state
+		$this->_delete_oauth_state();
 
 		// Retrieve the redirect_to URL
 		$redirect_to = get_transient('openid_redirect_to');
@@ -267,7 +267,7 @@ class OpenID
 
 		// Redirect to the desired URL
 		return wp_redirect($redirect_to);
-    }
+	}
 
     private function _login_user(WP_User $user): void
     {
@@ -321,76 +321,88 @@ class OpenID
     }
 
     private function _user_from_claim(array $claim): WP_User
-    {
-        // Check if we already have a user with this OpenID Subject ID
-        if ($user = get_users([
-            'meta_key' => 'openid_id',
-            'meta_value' => $claim['sub'],
-            'number' => 1,
-        ])[0] ?? null) {
-            return $user;
-        }
+	{
+		// Check if we already have a user with this OpenID Subject ID
+		$existing_users = get_users([
+			'meta_key' => 'openid_id',
+			'meta_value' => $claim['sub'],
+			'number' => 1,
+		]);
+		$user = $existing_users[0] ?? null;
 
-        // Check if we have a user with this username - we need to use the user_mapping to map the username from the OpenID provider
-        // We can fall back to the preferred_username claim if the user_mapping doesn't contain a user_login key
-        if ($user = get_user_by('login', $claim[$this->user_mapping['user_login']] ?? $claim['preferred_username'])) {
-            // We have a user with this username, so update their meta to include the OpenID Subject ID
-            update_user_meta($user->ID, 'openid_id', $claim['sub']);
-            return $user;
-        }
+		// If user exists, update their information
+		if ($user) {
+			$user_data = [
+				'ID' => $user->ID,
+				'user_login' => $claim[$this->user_mapping['user_login']] ?? $claim['preferred_username'],
+				'user_email' => $claim[$this->user_mapping['user_email']] ?? $claim['email'],
+				'meta_input' => [
+					'openid_id' => $claim['sub'],
+					'upm_classif_codes' => $claim['upmClassifCode'] ?? '',
+				],
+			];
 
-        // Check if we have a user with this email address - we need to use the user_mapping to map the email from the OpenID provider
-        // We can fall back to the email claim if the user_mapping doesn't contain a user_email key
-        if ($user = get_user_by('email', $claim[$this->user_mapping['user_email']] ?? $claim['email'])) {
-            // We have a user with this email address, so update their meta to include the OpenID Subject ID
-            update_user_meta($user->ID, 'openid_id', $claim['sub']);
-            return $user;
-        }
+			// Update additional fields if they exist in the claim
+			foreach ($this->user_mapping as $key => $value) {
+				if ($key === 'user_login' || $key === 'user_email') {
+					continue;
+				}
 
-        // We don't have a user with this OpenID Subject ID, username or email address, so create one, using the
-        // user_mapping to map the fields from the OpenID provider
+				if ($value === null || !isset($claim[$value])) {
+					continue;
+				}
 
-        // We can fall back to the preferred_username claim if the user_mapping doesn't contain a user_login key
-        $user_data = [
-            'user_login' => $claim[$this->user_mapping['user_login']] ?? $claim['preferred_username'],
-            'user_email' => $claim[$this->user_mapping['user_email']] ?? $claim['email'],
-            'user_pass' => wp_generate_password(),
-            'role' => $this->default_role,
-            'meta_input' => [
-                'openid_id' => $claim['sub']
-            ],
-        ];
+				$user_data[$key] = $claim[$value];
+			}
+
+			// Update the user
+			wp_update_user($user_data);
+
+			return get_user_by('id', $user->ID);
+		}
+
+		// User does not exist, create a new user
+		$user_data = [
+			'user_login' => $claim[$this->user_mapping['user_login']] ?? $claim['preferred_username'],
+			'user_email' => $claim[$this->user_mapping['user_email']] ?? $claim['email'],
+			'user_pass' => wp_generate_password(),
+			'role' => $this->default_role,
+			'meta_input' => [
+				'openid_id' => $claim['sub'],
+				'upm_classif_codes' => $claim['upmClassifCode'] ?? '',
+			],
+		];
 
         // We loop through the user_mapping to map the fields from the OpenID provider.
-        foreach ($this->user_mapping as $key => $value) {
+		foreach ($this->user_mapping as $key => $value) {
             // We don't want to overwrite the user_login or user_email fields, as we've already set those above
-            if ($key === 'user_login' || $key === 'user_email') {
-                continue;
-            }
+			if ($key === 'user_login' || $key === 'user_email') {
+				continue;
+			}
 
             // If the value is null or the property doesn't exist in the claim, we don't want to set it
-            if ($value === null || !isset($claim[$value])) {
-                continue;
-            }
+			if ($value === null || !isset($claim[$value])) {
+				continue;
+			}
 
             // Set the mapped property on the user
-            $user_data[$key] = $claim[$value];
-        }
+			$user_data[$key] = $claim[$value];
+		}
 
         // Create the user, and return it
-        $user_id = wp_insert_user($user_data);
+		$user_id = wp_insert_user($user_data);
 
-        if (is_wp_error($user_id)) {
-            die("Error Creating User: " . $user_id->get_error_message());
-        }
+		if (is_wp_error($user_id)) {
+			die("Error Creating User: " . $user_id->get_error_message());
+		}
 
-        return get_user_by('id', $user_id);
-    }
+		return get_user_by('id', $user_id);
+	}
 
     public function openid_login_page_button(): void
-    {
+	{
 		// Si tenemos un emisor, client_id y client_secret, podemos mostrar el botón de inicio de sesión
-        if (isset($this->metadata['issuer']) && $this->client_id && $this->client_secret) {
+		if (isset($this->metadata['issuer']) && $this->client_id && $this->client_secret) {
 
 			// Obtener la URL completa actual incluyendo la subruta y los parámetros de consulta
 			$current_url = home_url($_SERVER['REQUEST_URI']);
@@ -415,39 +427,39 @@ class OpenID
 			$encoded_redirect_to = rawurlencode($redirect_to);
 			$login_url = site_url('/wp-login.php?openid=login&redirect_to=') . $encoded_redirect_to;
 
-            ?>
-            <style>
-                .openid-logo {
-                    background-image: url("<?php echo esc_url($this->login_image); ?>");
-                    overflow: hidden;
-                    background-position: 45% 45%;
-                    background-repeat: no-repeat;
-                    background-size: cover;
-                    height: 100px;
-                    margin-bottom: 20px;
-                }
-            </style>
-            <form style="padding-bottom: 26px; text-align: center;">
-                <div class="openid-logo"></div>
+			?>
+			<style>
+				.openid-logo {
+					background-image: url("<?php echo esc_url($this->login_image); ?>");
+					overflow: hidden;
+					background-position: 45% 45%;
+					background-repeat: no-repeat;
+					background-size: cover;
+					height: 100px;
+					margin-bottom: 20px;
+				}
+			</style>
+			<form style="padding-bottom: 26px; text-align: center;">
+				<div class="openid-logo"></div>
 				<!-- Utiliza la URL de inicio de sesión modificada con redirect_to -->
 				<a href="<?php echo esc_url($login_url); ?>" class="button">
-                    <?php printf(
-                        esc_html__($this->login_button_text, 'openid')
-                    ); ?>
-                </a>
-            </form>
+					<?php printf(
+						esc_html__($this->login_button_text, 'openid')
+					); ?>
+				</a>
+			</form>
 
-            <?php
-            if (!$this->take_over_login) {
+			<?php
+			if (!$this->take_over_login) {
 				// Si no estamos tomando el control de la página de inicio de sesión, podemos mostrar el texto del separador
-                ?>
-                <p style="margin-top: 20px; text-align: center;">
-                    <?php esc_html_e($this->login_separator_text, 'openid'); ?>
-                </p>
-                <?php
-            }
-        }
-    }
+				?>
+				<p style="margin-top: 20px; text-align: center;">
+					<?php esc_html_e($this->login_separator_text, 'openid'); ?>
+				</p>
+				<?php
+			}
+		}
+	}
 
     /**
      * @throws Exception
@@ -1020,3 +1032,33 @@ class OpenID
         setcookie('openid_session', '', time() - 3600);
     }
 }
+// Añadir el campo al perfil del usuario
+add_action('show_user_profile', 'show_upm_classif_codes_field');
+add_action('edit_user_profile', 'show_upm_classif_codes_field');
+
+function show_upm_classif_codes_field($user) {
+    // Empieza el bloque PHP
+    $upm_classif_codes = get_the_author_meta('upm_classif_codes', $user->ID);
+
+    // Si $upm_classif_codes es un array, lo convertimos en una cadena
+    if (is_array($upm_classif_codes)) {
+        $upm_classif_codes = implode(', ', $upm_classif_codes); // Une los elementos con una coma y un espacio
+    }
+
+    // Salida HTML con valores dinámicos en PHP
+    ?>
+    <h3>Códigos de clasificación UPM</h3>
+    <table class="form-table">
+        <tr>
+            <th><label for="upm_classif_codes">Códigos de clasificación UPM</label></th>
+            <td>
+                <input type="text" name="upm_classif_codes" id="upm_classif_codes" value="<?php echo esc_attr($upm_classif_codes); ?>" class="regular-text" readonly />
+                <br>
+                <span class="description">Este campo muestra los códigos de clasificación UPM proporcionados por el proveedor de OIDC.</span>
+            </td>
+        </tr>
+    </table>
+    <?php
+    // Cierra el bloque PHP
+}
+?>
