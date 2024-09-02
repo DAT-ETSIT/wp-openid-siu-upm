@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.3.6] - 2024-09-02
+### :bug: Bug Fixes
+- [`ce91354`](https://github.com/DAT-ETSIT/wp-siu-upm/commit/ce9135419dd47fce9e288a58a17f6a1289cc387d) - Fixed updater slug and updated supported version *(commit by [@Pablofl01](https://github.com/Pablofl01))*
+
+
 ## [v0.3.5] - 2024-09-02
 ### :bug: Bug Fixes
 - [`9f25516`](https://github.com/DAT-ETSIT/wp-siu-upm/commit/9f25516d017cece8a6eebb2dd48f27479d97ecae) - Fixed existing user conflict when logging in with OIDC *(commit by [@Pablofl01](https://github.com/Pablofl01))*
@@ -90,3 +95,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [v0.3.2]: https://github.com/nicko170/wp-openid/compare/v0.3.1...v0.3.2
 [v0.3.4]: https://github.com/DAT-ETSIT/wp-siu-upm/compare/v0.3.3...v0.3.4
 [v0.3.5]: https://github.com/DAT-ETSIT/wp-siu-upm/compare/v0.3.4...v0.3.5
+[v0.3.6]: https://github.com/DAT-ETSIT/wp-siu-upm/compare/v0.3.5...v0.3.6
