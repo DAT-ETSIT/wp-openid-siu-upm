@@ -53,7 +53,7 @@ jobs:
           allowUpdates: true
           draft: false
           makeLatest: true
-          name: WP-SIU-UPM - ${{ github.ref_name }}
+          name: WP-OPENID-SIU-UPM - ${{ github.ref_name }}
           body: ${{ steps.changelog.outputs.changes }}
           artifacts: build/wp-openid-siu-upm.zip
           replacesArtifacts: true
