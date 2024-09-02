@@ -1,18 +1,13 @@
-# WP-OpenID
+# WP-OpenID-SIU-UPM
 
-A WordPress plugin to authenticate users via a OpenID Provider. This plugin scratches a very specific itch. This plugin
-is very
-simple and does not do anything other than authenticate users via an OpenID Provider.
-
-This plugin has been tested with both Keycloak and Okta, but should work with any OpenID Connect provider that supports
-the Authorization Code flow with PKCE.
+A WordPress plugin to authenticate users via a OpenID Provider. This plugin is based on <a href="https://github.com/nicko170/wp-openid">nicko170's wp-openid</a> and it is adapted to work seamlessly with UPM's SIU.
 
 ![The WordPress Login Page](docs/images/login_page.png?raw=true)
 
 ## Installation
 
 1. Download the latest release
-   from [GitHub Releases](https://github.com/nicko170/wp-openid/releases/latest/download/wp-openid.zip)
+   from [GitHub Releases](https://github.com/DAT-ETSIT/wp-openid-siu-upm/releases/latest/download/wp-openid-siu-upm.zip)
 2. In WordPress, go to **Plugins** > **Add New** > **Upload Plugin** and upload the zip file.
 3. Activate the plugin.
 4. A new **OpenID** menu item will appear in the WordPress admin Settings menu.
@@ -37,39 +32,22 @@ the Authorization Code flow with PKCE.
     - The other URLs can be left as their defaults.
 7. Click **Save**, and copy the **Client ID** and **Client Secret** values from the **Credentials** tab.
 
-## Setting up Okta
-
-1. If you don't already have an Okta account, sign up for free developer account at https://developer.okta.com/signup/
-2. [Sign in to your Okta organization](https://developer.okta.com/login) with your administrator account.
-3. From the Admin dashboard, go to **Applications** > **Applications**.
-4. Click **Create App Integration** and select "OIDC - OpenID Connect" as the **Sign-in method**, and "Web Application"
-   as the **Application Type**.
-5. Enter the following values:
-    - **Name**: WordPress (or whatever, I don't care)
-    - **Grant type**: Authorization Code
-    - **Sign-in redirect URIs**: `https://example.com/index.php?rest_route=/openid/callback`
-    - **Sign-out redirect URIs**: `https://example.com/`
-6. Click **Save**, and copy the **Client ID** and **Client Secret** values.
-7. If you want to show this application in the Okta Dashboard, click **Edit** on the **General Settings** tab and
-   enter the following values:
-    - **Login initiated by**: Either Okta or App
-    - **Application visibility**: Show in both the Okta End-User Dashboard and the Okta Admin Console
-    - **Initiate login URI**: `https://example.com/index.php?rest_route=/openid/login`
-
 ## Configuration
 
 The plugin requires the following configuration options:
 
 1. Metadata URL (e.g. `https://example.okta.com/.well-known/openid-configuration` or for
    Keycloak `https://example.com/auth/realms/example/.well-known/openid-configuration`)
-2. Client ID (e.g. `0oa1b2c3d4e5f6g7h8i9j`)
-3. Client Secret (e.g. `0oa1b2c3d4e5f6g7h8i9j0oa1b2c3d4e5f6g7h8i9j`)
+2. Redirect URI (e.g. `https://example.com/wp-login.php?openid=callback`)
+3. Client ID (e.g. `0oa1b2c3d4e5f6g7h8i9j`)
+4. Client Secret (e.g. `0oa1b2c3d4e5f6g7h8i9j0oa1b2c3d4e5f6g7h8i9j`)
 
 You can set these options via the Settings > Okta page in the WordPress admin, or in your `wp-config.php` file if you
 don't want them to be editable by other users:
 
 ```php
 define('WP_OPENID_METADATA_URL', 'https://example.okta.com/.well-known/openid-configuration');
+define('WP_OPENID_REDIRECT_URI', 'https://example.com/wp-login.php?openid=callback');
 define('WP_OPENID_CLIENT_ID', '0oa1b2c3d4e5f6g7h8i9j');
 define('WP_OPENID_CLIENT_SECRET', '0oa1b2c3d4e5f6g7h8i9j0oa1b2c3d4e5f6g7h8i9j');
 ```
@@ -104,6 +82,8 @@ The following OpenID Connect attributes are supported:
 - website: The user's website
 - email: The user's email address
 
+**This plugin will also add the `upmClassifCode` values to user metadata.**
+
 ![Attribute Mapping](docs/images/attribute_mapping.png?raw=true)
 
 ## User matching is performed by matching:
@@ -125,6 +105,8 @@ using the issue tracker.
 ## Credits
 
 - [Nick Pratley](https://github.com/nicko170)
+- [Pablo Fernández López](https://github.com/pablofl01)
+- [DAT-ETSIT UPM](https://github.com/DAT-ETSIT)
 
 ## License
 
