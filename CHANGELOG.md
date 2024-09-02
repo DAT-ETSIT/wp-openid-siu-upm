@@ -6,17 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v0.3.6] - 2024-09-02
 ### :bug: Bug Fixes
-- [`ce91354`](https://github.com/DAT-ETSIT/wp-siu-upm/commit/ce9135419dd47fce9e288a58a17f6a1289cc387d) - Fixed updater slug and updated supported version *(commit by [@Pablofl01](https://github.com/Pablofl01))*
+- [`ce91354`](https://github.com/DAT-ETSIT/wp-openid-siu-upm/commit/ce9135419dd47fce9e288a58a17f6a1289cc387d) - Fixed updater slug and updated supported version *(commit by [@Pablofl01](https://github.com/Pablofl01))*
 
 
 ## [v0.3.5] - 2024-09-02
 ### :bug: Bug Fixes
-- [`9f25516`](https://github.com/DAT-ETSIT/wp-siu-upm/commit/9f25516d017cece8a6eebb2dd48f27479d97ecae) - Fixed existing user conflict when logging in with OIDC *(commit by [@Pablofl01](https://github.com/Pablofl01))*
+- [`9f25516`](https://github.com/DAT-ETSIT/wp-openid-siu-upm/commit/9f25516d017cece8a6eebb2dd48f27479d97ecae) - Fixed existing user conflict when logging in with OIDC *(commit by [@Pablofl01](https://github.com/Pablofl01))*
 
 
 ## [v0.3.4] - 2024-09-02
 ### :sparkles: New Features
-- [`e7adeac`](https://github.com/DAT-ETSIT/wp-siu-upm/commit/e7adeac130ad2a6dc7287909fe628c0aa899fc86) - Added upmClassifCode to users and field updating on each login *(commit by [@Pablofl01](https://github.com/Pablofl01))*
+- [`e7adeac`](https://github.com/DAT-ETSIT/wp-openid-siu-upm/commit/e7adeac130ad2a6dc7287909fe628c0aa899fc86) - Added upmClassifCode to users and field updating on each login *(commit by [@Pablofl01](https://github.com/Pablofl01))*
 
 
 ## [v0.3.2] - 2023-03-27
