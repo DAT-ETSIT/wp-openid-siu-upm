@@ -192,11 +192,17 @@ class OpenID
         // Redirect to OpenID , passing the state and nonce
         // Implementation taken from: https://developer.openid.com/docs/guides/sign-into-web-app-redirect/php/main/#redirect-to-the-sign-in-page
 
-        $state = $this->_create_oauth_state();
+		$state = $this->_create_oauth_state();
 
         // Create the PKCE code verifier and code challenge
         $hash = hash('sha256', $state['verifier'], true);
         $code_challenge = rtrim(strtr(base64_encode($hash), '+/', '-_'), '=');
+
+		// Capture the redirect_to parameter
+		$redirect_to = isset($_REQUEST['redirect_to']) ? esc_url($_REQUEST['redirect_to']) : home_url();
+
+		// Store the redirect_to URL in a session or a transitory option
+		set_transient('openid_redirect_to', $redirect_to, 3600); // Store for 1 hour
 
         return wp_redirect(add_query_arg([
             'response_type' => 'code',
@@ -225,7 +231,7 @@ class OpenID
         }
 
         if (empty($_GET['code'])) {
-            die("this is unexpected, the authorization server redirected without a code or an  error");
+			die("this is unexpected, the authorization server redirected without a code or an error");
         }
 
         // Exchange the authorization code for an access token by making a request to the token endpoint,
@@ -252,8 +258,15 @@ class OpenID
         // Delete the state
         $this->_delete_oauth_state();
 
-        // Redirect to the admin page
-        return wp_redirect($this->is_network ? network_admin_url() : admin_url());
+		// Retrieve the redirect_to URL
+		$redirect_to = get_transient('openid_redirect_to');
+		delete_transient('openid_redirect_to'); // Clean up the transient
+
+		// If no redirect_to URL is set, default to the home URL
+		$redirect_to = $redirect_to ? $redirect_to : home_url();
+
+		// Redirect to the desired URL
+		return wp_redirect($redirect_to);
     }
 
     private function _login_user(WP_User $user): void
@@ -376,8 +389,32 @@ class OpenID
 
     public function openid_login_page_button(): void
     {
-        // If we have an issuer, client_id and client_secret, we can display the login button
+		// Si tenemos un emisor, client_id y client_secret, podemos mostrar el botón de inicio de sesión
         if (isset($this->metadata['issuer']) && $this->client_id && $this->client_secret) {
+
+			// Obtener la URL completa actual incluyendo la subruta y los parámetros de consulta
+			$current_url = home_url($_SERVER['REQUEST_URI']);
+
+			// Extraer el parámetro 'redirect_to' de la URL actual, si existe
+			$parsed_url = parse_url($current_url);
+			$redirect_to = '';
+
+			if (isset($parsed_url['query'])) {
+				parse_str($parsed_url['query'], $query_params);
+				if (isset($query_params['redirect_to'])) {
+					$redirect_to = $query_params['redirect_to'];
+				}
+			}
+
+			// Si no hay un parámetro 'redirect_to', usar la raíz del sitio
+			if (empty($redirect_to)) {
+				$redirect_to = '/'; // O utiliza la URL de inicio por defecto
+			}
+
+			// Construir la URL de redirección para el botón de inicio de sesión
+			$encoded_redirect_to = rawurlencode($redirect_to);
+			$login_url = site_url('/wp-login.php?openid=login&redirect_to=') . $encoded_redirect_to;
+
             ?>
             <style>
                 .openid-logo {
@@ -392,7 +429,8 @@ class OpenID
             </style>
             <form style="padding-bottom: 26px; text-align: center;">
                 <div class="openid-logo"></div>
-                <a href="<?php echo esc_url(add_query_arg('openid', 'login', site_url('/wp-login.php'))) ?>" class="button">
+				<!-- Utiliza la URL de inicio de sesión modificada con redirect_to -->
+				<a href="<?php echo esc_url($login_url); ?>" class="button">
                     <?php printf(
                         esc_html__($this->login_button_text, 'openid')
                     ); ?>
@@ -401,7 +439,7 @@ class OpenID
 
             <?php
             if (!$this->take_over_login) {
-                // If we are not taking over the login page, we can display the separator text
+				// Si no estamos tomando el control de la página de inicio de sesión, podemos mostrar el texto del separador
                 ?>
                 <p style="margin-top: 20px; text-align: center;">
                     <?php esc_html_e($this->login_separator_text, 'openid'); ?>
