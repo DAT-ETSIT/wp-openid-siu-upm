@@ -321,83 +321,127 @@ class OpenID
     }
 
     private function _user_from_claim(array $claim): WP_User
-	{
-		// Check if we already have a user with this OpenID Subject ID
-		$existing_users = get_users([
-			'meta_key' => 'openid_id',
-			'meta_value' => $claim['sub'],
-			'number' => 1,
-		]);
-		$user = $existing_users[0] ?? null;
+{
+    // Check if we already have a user with this OpenID Subject ID
+    $existing_users = get_users([
+        'meta_key' => 'openid_id',
+        'meta_value' => $claim['sub'],
+        'number' => 1,
+    ]);
+    $user = $existing_users[0] ?? null;
 
-		// If user exists, update their information
-		if ($user) {
-			$user_data = [
-				'ID' => $user->ID,
-				'user_login' => $claim[$this->user_mapping['user_login']] ?? $claim['preferred_username'],
-				'user_email' => $claim[$this->user_mapping['user_email']] ?? $claim['email'],
-				'meta_input' => [
-					'openid_id' => $claim['sub'],
-					'upm_classif_codes' => $claim['upmClassifCode'] ?? '',
-				],
-			];
+    if ($user) {
+        // Update existing user
+        $user_data = [
+            'ID' => $user->ID,
+            'user_login' => $claim[$this->user_mapping['user_login']] ?? $claim['preferred_username'],
+            'user_email' => $claim[$this->user_mapping['user_email']] ?? $claim['email'],
+            'meta_input' => [
+                'openid_id' => $claim['sub'],
+                'upm_classif_codes' => $claim['upmClassifCode'] ?? '',
+            ],
+        ];
 
-			// Update additional fields if they exist in the claim
-			foreach ($this->user_mapping as $key => $value) {
-				if ($key === 'user_login' || $key === 'user_email') {
-					continue;
-				}
+        // Update additional fields if they exist in the claim
+        foreach ($this->user_mapping as $key => $value) {
+            if ($key === 'user_login' || $key === 'user_email') {
+                continue;
+            }
 
-				if ($value === null || !isset($claim[$value])) {
-					continue;
-				}
+            if ($value === null || !isset($claim[$value])) {
+                continue;
+            }
 
-				$user_data[$key] = $claim[$value];
-			}
+            $user_data[$key] = $claim[$value];
+        }
 
-			// Update the user
-			wp_update_user($user_data);
+        wp_update_user($user_data);
+        return get_user_by('id', $user->ID);
+    }
 
-			return get_user_by('id', $user->ID);
-		}
+    // Check if we have a user with this username
+    $username = $claim[$this->user_mapping['user_login']] ?? $claim['preferred_username'];
+    $user = get_user_by('login', $username);
 
-		// User does not exist, create a new user
-		$user_data = [
-			'user_login' => $claim[$this->user_mapping['user_login']] ?? $claim['preferred_username'],
-			'user_email' => $claim[$this->user_mapping['user_email']] ?? $claim['email'],
-			'user_pass' => wp_generate_password(),
-			'role' => $this->default_role,
-			'meta_input' => [
-				'openid_id' => $claim['sub'],
-				'upm_classif_codes' => $claim['upmClassifCode'] ?? '',
-			],
-		];
+    if ($user) {
+        // Update user meta
+        update_user_meta($user->ID, 'openid_id', $claim['sub']);
+        update_user_meta($user->ID, 'upm_classif_codes', $claim['upmClassifCode'] ?? '');
+        
+        // Update additional fields if they exist in the claim
+        foreach ($this->user_mapping as $key => $value) {
+            if ($key === 'user_login' || $key === 'user_email') {
+                continue;
+            }
 
-        // We loop through the user_mapping to map the fields from the OpenID provider.
-		foreach ($this->user_mapping as $key => $value) {
-            // We don't want to overwrite the user_login or user_email fields, as we've already set those above
-			if ($key === 'user_login' || $key === 'user_email') {
-				continue;
-			}
+            if ($value === null || !isset($claim[$value])) {
+                continue;
+            }
 
-            // If the value is null or the property doesn't exist in the claim, we don't want to set it
-			if ($value === null || !isset($claim[$value])) {
-				continue;
-			}
+            update_user_meta($user->ID, $key, $claim[$value]);
+        }
 
-            // Set the mapped property on the user
-			$user_data[$key] = $claim[$value];
-		}
+        return $user;
+    }
 
-        // Create the user, and return it
-		$user_id = wp_insert_user($user_data);
+    // Check if we have a user with this email address
+    $email = $claim[$this->user_mapping['user_email']] ?? $claim['email'];
+    $user = get_user_by('email', $email);
 
-		if (is_wp_error($user_id)) {
-			die("Error Creating User: " . $user_id->get_error_message());
-		}
+    if ($user) {
+        // Update user meta
+        update_user_meta($user->ID, 'openid_id', $claim['sub']);
+        update_user_meta($user->ID, 'upm_classif_codes', $claim['upmClassifCode'] ?? '');
+        
+        // Update additional fields if they exist in the claim
+        foreach ($this->user_mapping as $key => $value) {
+            if ($key === 'user_login' || $key === 'user_email') {
+                continue;
+            }
 
-		return get_user_by('id', $user_id);
-	}
+            if ($value === null || !isset($claim[$value])) {
+                continue;
+            }
+
+            update_user_meta($user->ID, $key, $claim[$value]);
+        }
+
+        return $user;
+    }
+
+    // We don't have a user with this OpenID Subject ID, username or email address, so create one
+    $user_data = [
+        'user_login' => $username,
+        'user_email' => $email,
+        'user_pass' => wp_generate_password(),
+        'role' => $this->default_role,
+        'meta_input' => [
+            'openid_id' => $claim['sub'],
+            'upm_classif_codes' => $claim['upmClassifCode'] ?? '',
+        ],
+    ];
+
+    foreach ($this->user_mapping as $key => $value) {
+        if ($key === 'user_login' || $key === 'user_email') {
+            continue;
+        }
+
+        if ($value === null || !isset($claim[$value])) {
+            continue;
+        }
+
+        $user_data[$key] = $claim[$value];
+    }
+
+    $user_id = wp_insert_user($user_data);
+
+    if (is_wp_error($user_id)) {
+        die("Error Creating User: " . $user_id->get_error_message());
+    }
+
+    return get_user_by('id', $user_id);
+}
+
 
     public function openid_login_page_button(): void
 	{
