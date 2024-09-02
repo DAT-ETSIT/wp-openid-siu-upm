@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.3.4] - 2024-09-02
+### :sparkles: New Features
+- [`e7adeac`](https://github.com/DAT-ETSIT/wp-siu-upm/commit/e7adeac130ad2a6dc7287909fe628c0aa899fc86) - Added upmClassifCode to users and field updating on each login *(commit by [@Pablofl01](https://github.com/Pablofl01))*
+
+
 ## [v0.3.2] - 2023-03-27
 ### :bug: Bug Fixes
 - [`18a0231`](https://github.com/nicko170/wp-openid/commit/18a0231bc7ac67c3498d66bc585c01704301d470) - escape url *(commit by [@nicko170](https://github.com/nicko170))*
@@ -78,3 +83,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [v0.3.0]: https://github.com/nicko170/wp-openid/compare/v0.2.3...v0.3.0
 [v0.3.1]: https://github.com/nicko170/wp-openid/compare/v0.3.0...v0.3.1
 [v0.3.2]: https://github.com/nicko170/wp-openid/compare/v0.3.1...v0.3.2
+[v0.3.4]: https://github.com/DAT-ETSIT/wp-siu-upm/compare/v0.3.3...v0.3.4
