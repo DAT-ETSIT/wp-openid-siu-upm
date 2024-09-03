@@ -23,7 +23,7 @@ jobs:
           # Get the version from the ref_name, and remove the v prefix
           version=${{ github.ref_name }}
           version=${version/#v}
-          sed -i "s/VERSION/$version/g" wp-openid.php
+          sed -i "s/VERSION/$version/g" wp-openid-siu-upm.php
 
       - run: mkdir build
 
