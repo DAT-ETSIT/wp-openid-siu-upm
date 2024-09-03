@@ -417,7 +417,7 @@ class OpenID
         'role' => $this->default_role,
         'meta_input' => [
             'openid_id' => $claim['sub'],
-            'upm_classif_codes' => $claim['upmClassifCode'] ?? '',
+            'upm_classif_codes' => implode(', ', $claim['upmClassifCode']) ?? '',
         ],
     ];
 
