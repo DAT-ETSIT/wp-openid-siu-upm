@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.3.8] - 2024-09-03
+### :bug: Bug Fixes
+- [`08630c0`](https://github.com/DAT-ETSIT/wp-openid-siu-upm/commit/08630c0613345e8064f0dce5ca7a037684dc8ca2) - Changed main file name *(commit by [@Pablofl01](https://github.com/Pablofl01))*
+- [`c0f47a0`](https://github.com/DAT-ETSIT/wp-openid-siu-upm/commit/c0f47a0db58b637ef08d0284e1a8cc8b0362232e) - upmClassifCodes now stored as string *(commit by [@Pablofl01](https://github.com/Pablofl01))*
+
+
 ## [v0.3.7] - 2024-09-02
 ### :bug: Bug Fixes
 - [`73e636b`](https://github.com/DAT-ETSIT/wp-openid-siu-upm/commit/73e636b18e7022ba1b06b3ef6707ce481ca3b61f) - Updated release name *(commit by [@Pablofl01](https://github.com/Pablofl01))*
@@ -102,3 +108,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [v0.3.5]: https://github.com/DAT-ETSIT/wp-siu-upm/compare/v0.3.4...v0.3.5
 [v0.3.6]: https://github.com/DAT-ETSIT/wp-siu-upm/compare/v0.3.5...v0.3.6
 [v0.3.7]: https://github.com/DAT-ETSIT/wp-openid-siu-upm/compare/v0.3.6...v0.3.7
+[v0.3.8]: https://github.com/DAT-ETSIT/wp-openid-siu-upm/compare/v0.3.7...v0.3.8
