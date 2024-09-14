@@ -339,6 +339,8 @@ class OpenID
             'meta_input' => [
                 'openid_id' => $claim['sub'],
                 'upm_classif_codes' => implode(', ', $claim['upmClassifCode']) ?? '',
+                'given_name' => $claim['given_name'],
+                'family_name' => $claim['family_name'],
             ],
         ];
 
@@ -367,6 +369,8 @@ class OpenID
         // Update user meta
         update_user_meta($user->ID, 'openid_id', $claim['sub']);
         update_user_meta($user->ID, 'upm_classif_codes', implode(', ', $claim['upmClassifCode']) ?? '');
+        update_user_meta($user->ID, 'given_name', $claim['given_name']);
+        update_user_meta($user->ID, 'family_name', $claim['family_name']);
         
         // Update additional fields if they exist in the claim
         foreach ($this->user_mapping as $key => $value) {
@@ -392,6 +396,8 @@ class OpenID
         // Update user meta
         update_user_meta($user->ID, 'openid_id', $claim['sub']);
         update_user_meta($user->ID, 'upm_classif_codes', implode(', ', $claim['upmClassifCode']) ?? '');
+        update_user_meta($user->ID, 'given_name', $claim['given_name']);
+        update_user_meta($user->ID, 'family_name', $claim['family_name']);
         
         // Update additional fields if they exist in the claim
         foreach ($this->user_mapping as $key => $value) {
@@ -418,6 +424,8 @@ class OpenID
         'meta_input' => [
             'openid_id' => $claim['sub'],
             'upm_classif_codes' => implode(', ', $claim['upmClassifCode']) ?? '',
+            'given_name' => $claim['given_name'],
+            'family_name' => $claim['family_name'],
         ],
     ];
 
