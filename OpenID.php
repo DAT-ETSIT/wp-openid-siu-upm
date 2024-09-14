@@ -199,7 +199,7 @@ class OpenID
 		$code_challenge = rtrim(strtr(base64_encode($hash), '+/', '-_'), '=');
 
 		// Capture the redirect_to parameter
-		$redirect_to = isset($_REQUEST['redirect_to']) ? esc_url($_REQUEST['redirect_to']) : home_url();
+		$redirect_to = isset($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : home_url();
 
 		// Store the redirect_to URL in a session or a transitory option
 		set_transient('openid_redirect_to', $redirect_to, 3600); // Store for 1 hour
