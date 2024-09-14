@@ -9,7 +9,7 @@ class GithubUpdater
     private ?string $repository;
     private string $asset_name;
     private string $readme_url;
-
+    private string $slug = 'wp-openid-siu-upm'; // Forzamos el slug correcto
 
     public static function make(): self
     {
@@ -20,7 +20,7 @@ class GithubUpdater
     {
         $this->file = $file;
         $this->plugin = get_plugin_data($this->file);
-        $this->basename = plugin_basename($this->file);
+        $this->basename = $this->slug . '/' . basename($this->file); // Usamos el slug forzado
         $this->active = is_plugin_active($this->basename);
 
         if ($this->repository) {
@@ -58,7 +58,7 @@ class GithubUpdater
             // No update, return a fake update to enable auto update check
             $transient->no_update[$this->basename] = (object)[
                 'id' => $this->basename,
-                'slug' => dirname($this->basename),
+                'slug' => $this->slug, // Usamos el slug correcto
                 'plugin' => $this->basename,
                 'new_version' => $this->plugin['Version'],
                 'url' => '',
@@ -82,14 +82,14 @@ class GithubUpdater
         }
 
         if (!empty($args->slug)) {
-            if ($args->slug == current(explode('/', $this->basename))) {
+            if ($args->slug == $this->slug) { // Comparar con el slug forzado
                 $gh = $this->_get_repository();
 
                 $plugin = [
                     'name' => $this->plugin['Name'],
-                    'slug' => $this->basename,
+                    'slug' => $this->slug, // Usamos el slug correcto
                     'requires' => '5.0',
-                    'tested' => '6.6.1',
+                    'tested' => '6.6.2',
                     'version' => $gh['tag_name'],
                     'author' => $this->plugin['AuthorName'],
                     'author_profile' => $this->plugin['AuthorURI'],
@@ -113,16 +113,49 @@ class GithubUpdater
     public function after_install($response, $hook_extra, $result)
     {
         global $wp_filesystem;
-
+    
         $install_directory = plugin_dir_path($this->file);
-        $wp_filesystem->move($result['destination'], $install_directory);
-        $result['destination'] = $install_directory;
-
+        $new_directory = trailingslashit(WP_PLUGIN_DIR) . $this->slug; // Ruta de la carpeta renombrada
+    
+        // Mueve el directorio descargado al nuevo directorio
+        $wp_filesystem->move($result['destination'], $new_directory);
+    
+        // Actualiza la propiedad basename con el nuevo directorio
+        $this->basename = plugin_basename($new_directory . '/' . basename($this->file));
+        $result['destination'] = $new_directory;
+    
+        // Actualizar las referencias en la base de datos
+        $this->update_database_references();
+    
+        // Reactiva el plugin si estaba activo antes
         if ($this->active) {
             activate_plugin($this->basename);
         }
-
+    
         return $result;
+    }
+    
+    private function update_database_references()
+    {
+        // Obtener la lista de plugins activos
+        $active_plugins = get_option('active_plugins', []);
+    
+        // Buscar la referencia antigua del plugin en los plugins activos y reemplazarla
+        $old_basename = plugin_basename($this->file); // Referencia antigua
+        $new_basename = $this->slug . '/' . basename($this->file); // Nueva referencia
+    
+        if (in_array($old_basename, $active_plugins)) {
+            // Reemplazar la referencia antigua por la nueva en la lista de plugins activos
+            $active_plugins = array_map(function ($plugin) use ($old_basename, $new_basename) {
+                return ($plugin === $old_basename) ? $new_basename : $plugin;
+            }, $active_plugins);
+        
+            // Guardar la nueva lista de plugins activos
+            update_option('active_plugins', $active_plugins);
+        }
+    
+        // Actualizar otros datos de configuración relacionados, si es necesario
+        $this->update_plugin_options($old_basename, $new_basename);
     }
 
     private function _get_repository(): array
@@ -155,7 +188,7 @@ class GithubUpdater
             if ($asset) {
                 return (object)[
                     'id' => $this->basename,
-                    'slug' => dirname($this->basename),
+                    'slug' => $this->slug, // Usamos el slug correcto
                     'plugin' => $this->basename,
                     'new_version' => $response_version,
                     'url' => $response['url'],
