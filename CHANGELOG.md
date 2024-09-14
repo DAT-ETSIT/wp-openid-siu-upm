@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.3.10] - 2024-09-14
+### :bug: Bug Fixes
+- [`19b7c61`](https://github.com/DAT-ETSIT/wp-openid-siu-upm/commit/19b7c6104b46d4f93fa3a265f66f1d98c802d26d) - Fixed redirect_to URL encoding when params are present *(commit by [@Pablofl01](https://github.com/Pablofl01))*
+
+
 ## [v0.3.9] - 2024-09-03
 ### :bug: Bug Fixes
 - [`0e604f7`](https://github.com/DAT-ETSIT/wp-openid-siu-upm/commit/0e604f700cd5b2f88a11b09efbf73ff94b5495a9) - Stringified upmClassifCode when updating user *(commit by [@Pablofl01](https://github.com/Pablofl01))*
@@ -115,3 +120,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [v0.3.7]: https://github.com/DAT-ETSIT/wp-openid-siu-upm/compare/v0.3.6...v0.3.7
 [v0.3.8]: https://github.com/DAT-ETSIT/wp-openid-siu-upm/compare/v0.3.7...v0.3.8
 [v0.3.9]: https://github.com/DAT-ETSIT/wp-openid-siu-upm/compare/v0.3.8...v0.3.9
+[v0.3.10]: https://github.com/DAT-ETSIT/wp-openid-siu-upm/compare/v0.3.9...v0.3.10
