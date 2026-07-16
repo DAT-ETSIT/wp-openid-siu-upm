@@ -247,7 +247,38 @@ class OpenID
 		}
 
 		// Decode the id_token
-		$claim = json_decode(base64_decode(explode('.', $token['id_token'])[1]), true);
+        // JWT segments are encoded using Base64URL, not standard Base64.
+        $token_parts = explode('.', $token['id_token']);
+
+        if (count($token_parts) !== 3) {
+            die("Invalid id_token format");
+        }
+
+        $payload = strtr($token_parts[1], '-_', '+/');
+
+        // Restore omitted Base64 padding.
+        $padding = strlen($payload) % 4;
+
+        if ($padding !== 0) {
+            $payload .= str_repeat('=', 4 - $padding);
+        }
+
+        $decoded_payload = base64_decode($payload, true);
+
+        if ($decoded_payload === false) {
+            die("Invalid id_token encoding");
+        }
+
+        $claim = json_decode($decoded_payload, true);
+
+        if (!is_array($claim)) {
+            error_log(
+                'OpenID: unable to decode id_token payload: ' .
+                json_last_error_msg()
+            );
+
+            die("Invalid id_token payload");
+        }
 
 		// Find or create a WordPress user for the claim, based on the user field mapping
 		$user = $this->_user_from_claim($claim);
