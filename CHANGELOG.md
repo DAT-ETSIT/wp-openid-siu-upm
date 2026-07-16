@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.4.2] - 2026-07-16
+### :bug: Bug Fixes
+- [`33aabd7`](https://github.com/DAT-ETSIT/wp-openid-siu-upm/commit/33aabd7528853a65965c079a164f5ed8cf298a5c) - JWT uses base64url not base64 *(commit by [@Ines023](https://github.com/Ines023))*
+- [`8f720e1`](https://github.com/DAT-ETSIT/wp-openid-siu-upm/commit/8f720e1a2a30e8b0daecc9c338d831bf5074a3dd) - Updated github action *(commit by [@Ines023](https://github.com/Ines023))*
+
+
 ## [v0.4.1] - 2024-09-14
 ### :bug: Bug Fixes
 - [`8d179f6`](https://github.com/DAT-ETSIT/wp-openid-siu-upm/commit/8d179f6ff01225c97671d6f840cc71d010ca3e17) - Set blank fields if family_name, given_name or upm_classif_codes missing for institutional accounts *(commit by [@Pablofl01](https://github.com/Pablofl01))*
@@ -134,3 +140,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [v0.3.10]: https://github.com/DAT-ETSIT/wp-openid-siu-upm/compare/v0.3.9...v0.3.10
 [v0.4.0]: https://github.com/DAT-ETSIT/wp-openid-siu-upm/compare/v0.3.10...v0.4.0
 [v0.4.1]: https://github.com/DAT-ETSIT/wp-openid-siu-upm/compare/v0.4.0...v0.4.1
+[v0.4.2]: https://github.com/DAT-ETSIT/wp-openid-siu-upm/compare/v0.4.1...v0.4.2
